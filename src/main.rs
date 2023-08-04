@@ -38,19 +38,23 @@ fn main() {
     let mut enter_file = format!("#!{shell}\n");
     let mut out_file = format!("#!{shell}\n");
 
-    for (k, v) in doc["vars"].as_hash().unwrap() {
-        let k = k.as_str().unwrap();
-        match env::var(k) {
-            Ok(old_v) => shell_functions.add_env_var(&mut out_file, k, old_v.as_str()),
-            Err(_) => shell_functions.remove_env_var(&mut out_file, k),
+    if let Some(vars) = doc["vars"].as_hash() {
+        for (k, v) in vars {
+            let k = k.as_str().unwrap();
+            match env::var(k) {
+                Ok(old_v) => shell_functions.add_env_var(&mut out_file, k, old_v.as_str()),
+                Err(_) => shell_functions.remove_env_var(&mut out_file, k),
+            }
+            shell_functions.add_env_var(&mut enter_file, k, v.as_str().unwrap());
         }
-        shell_functions.add_env_var(&mut enter_file, k, v.as_str().unwrap());
     }
 
-    for (k, v) in doc["aliases"].as_hash().unwrap() {
-        let k = k.as_str().unwrap();
-        shell_functions.remove_alias(&mut out_file, k);
-        shell_functions.add_alias(&mut enter_file, k, v.as_str().unwrap());
+    if let Some(aliases) = doc["aliases"].as_hash() {
+        for (k, v) in aliases {
+            let k = k.as_str().unwrap();
+            shell_functions.remove_alias(&mut out_file, k);
+            shell_functions.add_alias(&mut enter_file, k, v.as_str().unwrap());
+        }
     }
 
     add_commands(&doc["on_enter"], &mut enter_file);
@@ -102,8 +106,10 @@ impl Shell for Bash {
 }
 
 fn add_commands(doc: &Yaml, file: &mut String) {
-    for command in doc.as_vec().unwrap() {
-        file.push_str(command.as_str().unwrap());
-        file.push('\n');
+    if let Some(commands) = doc.as_vec() {
+        for command in commands {
+            file.push_str(command.as_str().unwrap());
+            file.push('\n');
+        }
     }
 }
