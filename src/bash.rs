@@ -14,4 +14,7 @@ impl Shell for Bash {
     fn remove_alias(&self, file: &mut String, k: &str) {
         file.push_str(&format!("unalias {k}\n"))
     }
+    fn get_name(&self) -> &str {
+        "bash"
+    }
 }
