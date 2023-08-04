@@ -29,7 +29,7 @@ fn main() {
 
     let shell_functions: Box<dyn Shell> = if shell.contains("fish") {
         Box::new(Fish {})
-    } else if shell.contains("bash") {
+    } else if shell.contains("bash") || shell.contains("zsh") {
         Box::new(Bash {})
     } else {
         panic!("unsupported shell");
@@ -77,7 +77,7 @@ struct Bash {}
 
 impl Shell for Fish {
     fn add_env_var(&self, file: &mut String, k: &str, v: &str) {
-        file.push_str(&format!("set -g {} {}\n", k, v))
+        file.push_str(&format!("set -g {} \"{}\"\n", k, v))
     }
     fn remove_env_var(&self, file: &mut String, k: &str) {
         file.push_str(&format!("set -e {}\n", k))
@@ -92,7 +92,7 @@ impl Shell for Fish {
 
 impl Shell for Bash {
     fn add_env_var(&self, file: &mut String, k: &str, v: &str) {
-        file.push_str(&format!("export {}={}\n", k, v))
+        file.push_str(&format!("export {}=\"{}\"\n", k, v))
     }
     fn remove_env_var(&self, file: &mut String, k: &str) {
         file.push_str(&format!("unset {}\n", k))
