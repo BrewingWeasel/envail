@@ -1,2 +1,4 @@
+#!/bin/fish
 set -e AWESOME
 set -e NAUDINGAS
+echo 'bye!'

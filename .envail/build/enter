@@ -1,3 +1,5 @@
 #!/bin/fish
 set -g AWESOME cat
-set -g NAUDINGAS "lietuvių kalba"
+set -g NAUDINGAS lietuvių kalba
+echo 'hi'
+echo 'lol'

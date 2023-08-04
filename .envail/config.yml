@@ -1,3 +1,10 @@
 vars:
   AWESOME: cat
   NAUDINGAS: lietuvių kalba
+
+on_enter:
+  - "echo 'hi'"
+  - "echo 'lol'"
+
+on_exit:
+  - "echo 'bye!'"

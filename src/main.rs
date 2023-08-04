@@ -1,7 +1,7 @@
 extern crate globalenv;
 extern crate yaml_rust;
 use std::{env, fs};
-use yaml_rust::YamlLoader;
+use yaml_rust::{Yaml, YamlLoader};
 
 fn main() {
     let yaml = fs::read_to_string(".envail/config.yml").unwrap();
@@ -19,6 +19,9 @@ fn main() {
         add_env_var(&mut enter_file, k, v.as_str().unwrap());
     }
 
+    add_commands(&doc["on_enter"], &mut enter_file);
+    add_commands(&doc["on_exit"], &mut out_file);
+
     _ = fs::create_dir(".envail/build/");
     fs::write(".envail/build/enter", enter_file).expect("Unable to write file");
     fs::write(".envail/build/leave", out_file).expect("Unable to write file");
@@ -30,4 +33,11 @@ fn add_env_var(file: &mut String, k: &str, v: &str) {
 
 fn remove_env_var(file: &mut String, k: &str) {
     file.push_str(&format!("set -e {}\n", k))
+}
+
+fn add_commands(doc: &Yaml, file: &mut String) {
+    for command in doc.as_vec().unwrap() {
+        file.push_str(command.as_str().unwrap());
+        file.push('\n');
+    }
 }
