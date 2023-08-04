@@ -1,5 +1,5 @@
 #!/bin/bash
 export AWESOME=cat
 export NAUDINGAS=lietuvių kalba
-echo hi
-echo lol
+echo 'hi'
+echo 'lol'

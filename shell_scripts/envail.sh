@@ -16,3 +16,4 @@ function envail_cd {
 		source .envail/build/enter
 	fi
 }
+alias cd=envail_cd
