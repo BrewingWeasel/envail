@@ -1,7 +1,7 @@
 use std::{env, fs};
 
-mod bash;
-mod fish;
+pub mod bash;
+pub mod fish;
 
 use yaml_rust::{Yaml, YamlLoader};
 
@@ -33,13 +33,7 @@ pub fn build(file: String, shell: String) {
         }
     }
 
-    if let Some(aliases) = doc["aliases"].as_hash() {
-        for (k, v) in aliases {
-            let k = k.as_str().unwrap();
-            shell_functions.remove_alias(&mut out_file, k);
-            shell_functions.add_alias(&mut enter_file, k, v.as_str().unwrap());
-        }
-    }
+    add_aliases(doc, &shell_functions, &mut enter_file, &mut out_file);
 
     add_commands(&doc["on_enter"], &mut enter_file);
     add_commands(&doc["on_exit"], &mut out_file);
@@ -61,10 +55,124 @@ fn add_commands(doc: &Yaml, file: &mut String) {
     }
 }
 
+fn add_aliases(
+    doc: &Yaml,
+    shell_functions: &Box<dyn Shell>,
+    enter_file: &mut String,
+    out_file: &mut String,
+) {
+    if let Some(aliases) = doc["aliases"].as_hash() {
+        for (k, v) in aliases {
+            let k = k.as_str().unwrap();
+            shell_functions.add_alias(enter_file, k, v.as_str().unwrap());
+            shell_functions.remove_alias(out_file, k);
+        }
+    }
+}
+
 pub trait Shell {
     fn add_env_var(&self, file: &mut String, k: &str, v: &str);
     fn remove_env_var(&self, file: &mut String, k: &str);
     fn add_alias(&self, file: &mut String, k: &str, v: &str);
     fn remove_alias(&self, file: &mut String, k: &str);
     fn get_name(&self) -> &str;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::{bash::Bash, fish::Fish};
+    use yaml_rust::YamlLoader;
+    const ALIASES_NORMAL: &str = "aliases:
+            alias1: command1
+            alias2: command2
+            alias3: command2
+        ";
+    const ALIASES_EMPTY: &str = "aliases:
+    ";
+
+    #[test]
+    fn aliases_fish_normal() {
+        let mut enter_string = String::new();
+        let mut exit_string = String::new();
+        let shell: Box<dyn Shell> = Box::new(Fish {});
+
+        add_aliases(
+            &YamlLoader::load_from_str(ALIASES_NORMAL).unwrap()[0],
+            &shell,
+            &mut enter_string,
+            &mut exit_string,
+        );
+        assert_eq!(
+            enter_string,
+            "alias alias1 \"command1\"
+alias alias2 \"command2\"
+alias alias3 \"command2\"
+"
+        );
+        assert_eq!(
+            exit_string,
+            "functions -e alias1
+functions -e alias2
+functions -e alias3
+"
+        );
+    }
+    #[test]
+    fn aliases_fish_empty() {
+        let mut enter_string = String::new();
+        let mut exit_string = String::new();
+        let shell: Box<dyn Shell> = Box::new(Fish {});
+
+        add_aliases(
+            &YamlLoader::load_from_str(ALIASES_EMPTY).unwrap()[0],
+            &shell,
+            &mut enter_string,
+            &mut exit_string,
+        );
+        assert_eq!(enter_string, "")
+    }
+
+    #[test]
+    fn aliases_bash_normal() {
+        let mut enter_string = String::new();
+        let mut exit_string = String::new();
+        let shell: Box<dyn Shell> = Box::new(Bash {});
+
+        add_aliases(
+            &YamlLoader::load_from_str(ALIASES_NORMAL).unwrap()[0],
+            &shell,
+            &mut enter_string,
+            &mut exit_string,
+        );
+        assert_eq!(
+            enter_string,
+            "alias alias1=\"command1\"
+alias alias2=\"command2\"
+alias alias3=\"command2\"
+"
+        );
+        assert_eq!(
+            exit_string,
+            "unalias alias1
+unalias alias2
+unalias alias3
+"
+        );
+    }
+
+    #[test]
+    fn aliases_bash_empty() {
+        let mut enter_string = String::new();
+        let mut exit_string = String::new();
+        let shell: Box<dyn Shell> = Box::new(Bash {});
+
+        add_aliases(
+            &YamlLoader::load_from_str(ALIASES_EMPTY).unwrap()[0],
+            &shell,
+            &mut enter_string,
+            &mut exit_string,
+        );
+        assert_eq!(enter_string, "")
+    }
 }
