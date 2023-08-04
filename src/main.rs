@@ -3,11 +3,29 @@ extern crate yaml_rust;
 use std::{env, fs};
 use yaml_rust::{Yaml, YamlLoader};
 
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Path to shell to build for. Defaults to $SHELL
+    #[arg(long)]
+    shell: Option<String>,
+
+    /// Path to config file to read from
+    #[arg(short, long, default_value_t = String::from(".envail/config.yml"))]
+    config: String,
+}
+
 fn main() {
-    let yaml = fs::read_to_string(".envail/config.yml").unwrap();
+    let args = Args::parse();
+    let yaml = fs::read_to_string(args.config).unwrap();
     let doc = &YamlLoader::load_from_str(&yaml).unwrap()[0];
 
-    let shell = env::var("SHELL").unwrap();
+    let shell = match args.shell {
+        Some(v) => v,
+        None => env::var("SHELL").unwrap(),
+    };
 
     let shell_functions: Box<dyn Shell> = if shell.contains("fish") {
         Box::new(Fish {})
