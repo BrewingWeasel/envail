@@ -8,3 +8,6 @@ on_enter:
 
 on_exit:
   - "echo 'bye!'"
+
+aliases:
+  cowsay: "cowsay -f /usr/share/cowsay/cows/default.cow"
