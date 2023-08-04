@@ -1,5 +1,5 @@
-#!/bin/fish
-set -g AWESOME cat
-set -g NAUDINGAS lietuvių kalba
-echo 'hi'
-echo 'lol'
+#!/bin/bash
+export AWESOME=cat
+export NAUDINGAS=lietuvių kalba
+echo hi
+echo lol

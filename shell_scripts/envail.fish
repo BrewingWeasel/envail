@@ -16,15 +16,14 @@ function envail_cd
             cargo run
             source .envail/build/leave
         end
-    else
-        if test -d "$dir/.envail/build/"
-            source $dir/.envail/build/enter
-        else if test -f "$dir/.envail/config.yml"
-            cargo run
-            source .envail/build/enter
-        end
     end
     builtin cd $argv
+    if test -d ".envail/build/"
+        source .envail/build/enter
+    else if test -f ".envail/config.yml"
+        cargo run
+        source .envail/build/enter
+    end
 end
 
 alias cd envail_cd

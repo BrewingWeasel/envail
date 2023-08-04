@@ -28,11 +28,13 @@ fn main() {
 }
 
 fn add_env_var(file: &mut String, k: &str, v: &str) {
-    file.push_str(&format!("set -g {} {}\n", k, v))
+    // file.push_str(&format!("set -g {} {}\n", k, v))
+    file.push_str(&format!("export {}={}\n", k, v))
 }
 
 fn remove_env_var(file: &mut String, k: &str) {
-    file.push_str(&format!("set -e {}\n", k))
+    // file.push_str(&format!("set -e {}\n", k))
+    file.push_str(&format!("unset {}\n", k))
 }
 
 fn add_commands(doc: &Yaml, file: &mut String) {
