@@ -2,6 +2,9 @@ vars:
   AWESOME: cat
   NAUDINGAS: lietuvių kalba
 
+vars-bash:
+  TESTING: lietuvių kalba
+
 on_enter:
   - "echo 'hi'"
   - "echo 'lol'"
@@ -11,3 +14,9 @@ on_exit:
 
 aliases:
    cowsay: "cowsay -f /usr/share/cowsay/cows/default.cow"
+
+aliases-fish:
+   hi: "echo 'hi'"
+
+aliases-bash:
+   sigh: "echo 'hi'"

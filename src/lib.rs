@@ -22,21 +22,11 @@ pub fn build(file: String, shell: String) {
     let mut enter_file = format!("#!{shell}\n");
     let mut out_file = format!("#!{shell}\n");
 
-    if let Some(vars) = doc["vars"].as_hash() {
-        for (k, v) in vars {
-            let k = k.as_str().unwrap();
-            match env::var(k) {
-                Ok(old_v) => shell_functions.add_env_var(&mut out_file, k, old_v.as_str()),
-                Err(_) => shell_functions.remove_env_var(&mut out_file, k),
-            }
-            shell_functions.add_env_var(&mut enter_file, k, v.as_str().unwrap());
-        }
-    }
-
+    add_var(doc, &shell_functions, &mut enter_file, &mut out_file);
     add_aliases(doc, &shell_functions, &mut enter_file, &mut out_file);
 
-    add_commands(&doc["on_enter"], &mut enter_file);
-    add_commands(&doc["on_exit"], &mut out_file);
+    add_enter_command(doc, &shell_functions, &mut enter_file);
+    add_exit_command(doc, &shell_functions, &mut enter_file);
 
     // Some shells like zsh should be classified as bash, because they use the same script as bash
     let shell_name = shell_functions.get_name();
@@ -55,19 +45,64 @@ fn add_commands(doc: &Yaml, file: &mut String) {
     }
 }
 
+fn run_for_all_and_individual(
+    shell_functions: &Box<dyn Shell>,
+    property_name: &str,
+    mut run_func: impl FnMut(&str),
+) {
+    let custom_shell = format!("{}-{}", property_name, shell_functions.get_name());
+    for yaml_name in [property_name, &custom_shell] {
+        run_func(yaml_name);
+    }
+}
+
 fn add_aliases(
     doc: &Yaml,
     shell_functions: &Box<dyn Shell>,
     enter_file: &mut String,
     out_file: &mut String,
 ) {
-    if let Some(aliases) = doc["aliases"].as_hash() {
-        for (k, v) in aliases {
-            let k = k.as_str().unwrap();
-            shell_functions.add_alias(enter_file, k, v.as_str().unwrap());
-            shell_functions.remove_alias(out_file, k);
+    run_for_all_and_individual(shell_functions, "aliases", |yaml_name| {
+        if let Some(aliases) = doc[yaml_name].as_hash() {
+            for (k, v) in aliases {
+                let k = k.as_str().unwrap();
+                shell_functions.add_alias(enter_file, k, v.as_str().unwrap());
+                shell_functions.remove_alias(out_file, k);
+            }
         }
-    }
+    })
+}
+
+fn add_enter_command(doc: &Yaml, shell_functions: &Box<dyn Shell>, enter_file: &mut String) {
+    run_for_all_and_individual(shell_functions, "on_enter", |yaml_name| {
+        add_commands(&doc[yaml_name], enter_file);
+    })
+}
+
+fn add_exit_command(doc: &Yaml, shell_functions: &Box<dyn Shell>, enter_file: &mut String) {
+    run_for_all_and_individual(shell_functions, "on_exit", |yaml_name| {
+        add_commands(&doc[yaml_name], enter_file);
+    })
+}
+
+fn add_var(
+    doc: &Yaml,
+    shell_functions: &Box<dyn Shell>,
+    enter_file: &mut String,
+    out_file: &mut String,
+) {
+    run_for_all_and_individual(shell_functions, "vars", |yaml_name| {
+        if let Some(vars) = doc[yaml_name].as_hash() {
+            for (k, v) in vars {
+                let k = k.as_str().unwrap();
+                match env::var(k) {
+                    Ok(old_v) => shell_functions.add_env_var(out_file, k, old_v.as_str()),
+                    Err(_) => shell_functions.remove_env_var(out_file, k),
+                }
+                shell_functions.add_env_var(enter_file, k, v.as_str().unwrap());
+            }
+        }
+    })
 }
 
 pub trait Shell {
