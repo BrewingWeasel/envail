@@ -26,7 +26,7 @@ pub fn build(file: String, shell: String) {
     add_aliases(doc, &shell_functions, &mut enter_file, &mut out_file);
 
     add_enter_command(doc, &shell_functions, &mut enter_file);
-    add_exit_command(doc, &shell_functions, &mut enter_file);
+    add_exit_command(doc, &shell_functions, &mut out_file);
 
     // Some shells like zsh should be classified as bash, because they use the same script as bash
     let shell_name = shell_functions.get_name();
