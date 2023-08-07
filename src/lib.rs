@@ -1,6 +1,7 @@
 use std::{env, fs};
 
 pub mod bash;
+pub mod cd;
 pub mod fish;
 
 use yaml_rust::{Yaml, YamlLoader};
