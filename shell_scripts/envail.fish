@@ -1,6 +1,6 @@
 function envail_cd
-    set cmd (cargo build -- $argv)
+    set cmd (envail cd $argv)
     eval $cmd
 end
 
-alias cd envail_cd
+alias cdd envail_cd
