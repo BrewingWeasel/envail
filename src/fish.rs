@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::Shell;
 pub struct Fish {}
@@ -19,10 +19,10 @@ impl Shell for Fish {
     fn get_name(&self) -> &str {
         "fish"
     }
-    fn run_cd(&self, dir: &PathBuf) {
+    fn run_cd(&self, dir: &Path) {
         println!("builtin cd {};", dir.display());
     }
-    fn add_to_active(&self, dir: &PathBuf) {
+    fn add_to_active(&self, dir: &Path) {
         println!("set -a envail_active_dirs {};", dir.display());
     }
 }

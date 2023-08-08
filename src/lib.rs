@@ -1,4 +1,4 @@
-use std::{env, fs, path::PathBuf};
+use std::{env, fs, path::Path};
 
 pub mod bash;
 pub mod cd;
@@ -112,8 +112,8 @@ pub trait Shell {
     fn add_alias(&self, file: &mut String, k: &str, v: &str);
     fn remove_alias(&self, file: &mut String, k: &str);
     fn get_name(&self) -> &str;
-    fn run_cd(&self, path: &PathBuf);
-    fn add_to_active(&self, path: &PathBuf);
+    fn run_cd(&self, path: &Path);
+    fn add_to_active(&self, path: &Path);
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::Shell;
 pub struct Bash {}
@@ -19,10 +19,10 @@ impl Shell for Bash {
     fn get_name(&self) -> &str {
         "bash"
     }
-    fn run_cd(&self, dir: &PathBuf) {
+    fn run_cd(&self, dir: &Path) {
         println!("\\cd {};", dir.display());
     }
-    fn add_to_active(&self, dir: &PathBuf) {
+    fn add_to_active(&self, dir: &Path) {
         println!("envail_active_dirs+=({});", dir.display());
     }
 }
