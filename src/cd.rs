@@ -46,15 +46,12 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
 }
 
 fn is_child_of_active_dir(dir: &PathBuf, active_dirs: Option<Vec<String>>) -> bool {
-    match active_dirs {
-        Some(dirs) => {
-            for i in dirs {
-                if dir.starts_with(i) {
-                    return true;
-                }
+    if let Some(dirs) = active_dirs {
+        for i in dirs {
+            if dir.starts_with(i) {
+                return true;
             }
         }
-        None => {}
     }
     false
 }
