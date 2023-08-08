@@ -1,19 +1,16 @@
-function envail_cd {
-	dir="$(realpath $1)"
-	if ! [[ $dir == "$(pwd)*" ]]; then
-		if [[ -d .envail/build/bash ]]; then
-			source .envail/build/bash/leave
-		elif test -f .envail/config.yml; then
-			cargo run
-			source .envail/build/bash/leave
-		fi
-	fi
-	\cd "$@"
-	if [[ -d .envail/build/bash ]]; then
-		source .envail/build/bash/enter
-	elif test -f .envail/config.yml; then
-		cargo run
-		source .envail/build/bash/enter
-	fi
+function _envail_delete_from_active {
+	new_array=()
+	for value in "${envail_active_dirs[@]}"; do
+		[[ $value != $1 ]] && new_array+=($value)
+	done
+	envail_active_dirs=("${new_array[@]}")
+	unset new_array
 }
+
+function envail_cd {
+	cmd="$(envail cd $1 $envail_active_dirs)"
+	eval $cmd
+}
+
+export envail_active_dirs
 alias cd=envail_cd
