@@ -39,7 +39,7 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
     shell_functions.run_cd(&dir);
 
     if !child_of_active && dir.join(".envail").exists() {
-        println!("set -a envail_active_dirs {};", dir.display());
+        shell_functions.add_to_active(&dir);
         if !dir.join(format!(".envail/build/{shell_name}")).exists() {
             println!("envail build;")
         }

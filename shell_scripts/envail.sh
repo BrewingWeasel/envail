@@ -8,9 +8,9 @@ function _envail_delete_from_active {
 }
 
 function envail_cd {
-	cmd="$(envail cd $1 $envail_active_dirs)"
+	cmd="$(envail --shell /bin/bash cd $1 ${envail_active_dirs[*]})"
 	eval $cmd
 }
 
-export envail_active_dirs
+envail_active_dirs=()
 alias cd=envail_cd
