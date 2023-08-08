@@ -20,7 +20,7 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>) {
         }
     }
 
-    println!("cd {};", dir.display());
+    println!("builtin cd {};", dir.display());
 
     if !child_of_active && dir.join(".envail").exists() {
         println!("set -a envail_active_dirs {};", dir.display());
