@@ -14,7 +14,10 @@ pub struct Args {
 #[derive(Subcommand)]
 enum Commands {
     /// The cd command that envail aliases cd to. Generally you should just use cd
-    Cd { dir: Option<String> },
+    Cd {
+        dir: Option<String>,
+        active_dirs: Option<Vec<String>>,
+    },
     Build {
         /// Path to shell to build for. Defaults to $SHELL
         #[arg(long)]
@@ -30,8 +33,8 @@ fn main() {
     let args = Args::parse();
 
     match args.command {
-        Commands::Cd { dir } => {
-            envail_cd(dir);
+        Commands::Cd { dir, active_dirs } => {
+            envail_cd(dir, active_dirs);
         }
         Commands::Build { shell, config } => {
             let shell = match shell {
