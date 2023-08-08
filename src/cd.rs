@@ -16,7 +16,7 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>) {
                 println!("envail build;")
             }
             println!("source {}/.envail/build/fish/leave;", cur_dir.display());
-            println!("_envail_delete_from_active {};", dir.display())
+            println!("_envail_delete_from_active {};", cur_dir.display())
         }
     }
 
