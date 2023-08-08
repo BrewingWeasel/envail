@@ -23,17 +23,15 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
 
     let child_of_active = is_child_of_active_dir(&dir, active_dirs);
 
-    if !dir.starts_with(&cur_dir) && !child_of_active {
-        if cur_dir.join(".envail").exists() {
-            if !cur_dir.join(format!(".envail/build/{shell_name}")).exists() {
-                println!("envail build;")
-            }
-            println!(
-                "source {}/.envail/build/{shell_name}/leave;",
-                cur_dir.display()
-            );
-            println!("_envail_delete_from_active {};", cur_dir.display())
+    if !dir.starts_with(&cur_dir) && !child_of_active && cur_dir.join(".envail").exists() {
+        if !cur_dir.join(format!(".envail/build/{shell_name}")).exists() {
+            println!("envail build;")
         }
+        println!(
+            "source {}/.envail/build/{shell_name}/leave;",
+            cur_dir.display()
+        );
+        println!("_envail_delete_from_active {};", cur_dir.display())
     }
 
     shell_functions.run_cd(&dir);
