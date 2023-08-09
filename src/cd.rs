@@ -26,10 +26,6 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
 
     let child_of_active = is_child_of_active_dir(&dir, &active_dirs);
 
-    if !dir.starts_with(&cur_dir) && !child_of_active && cur_dir.join(".envail").exists() {
-        exit_dir(&cur_dir, shell_name)
-    }
-
     // If a user is in a path further away from their active directory and they leave it, we still
     // want to run the scripts
     for old_active_dir in is_leaving_active_dir(&dir, active_dirs) {
