@@ -1,7 +1,10 @@
 use std::{
-    env,
+    collections::HashMap,
+    env, fs,
     path::{Path, PathBuf},
 };
+
+use yaml_rust::YamlLoader;
 
 use crate::{bash, fish, Shell};
 
@@ -16,6 +19,8 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
     };
 
     let shell_name = shell_functions.get_name();
+
+    let global_vals = get_global_values();
 
     let dir = match dir {
         None => env::var("HOME").unwrap(),
@@ -58,8 +63,45 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
                     cur_path.display()
                 );
             }
+            if !cur_path.join(".envail/config.yml").exists() {
+                for (name, needed_file) in &global_vals {
+                    if cur_path.join(needed_file).exists() {
+                        shell_functions.add_to_active(&cur_path);
+                        if !cur_path
+                            .join(format!(".envail/build/{shell_name}/{name}"))
+                            .exists()
+                        {
+                            println!(
+                                "envail build --config ~/.config/envail/{name}.yml --name {name};"
+                            )
+                        }
+                        println!(
+                            "source {}/.envail/build/{shell_name}/{}enter;",
+                            cur_path.display(),
+                            name.to_owned() + "/"
+                        );
+                    }
+                }
+            }
         }
     }
+}
+
+fn get_global_values() -> HashMap<String, String> {
+    let mut globals = HashMap::new();
+
+    let config_dir: PathBuf = dirs::config_dir().unwrap();
+    if let Ok(yaml) = fs::read_to_string(config_dir.join("envail/global.yml")) {
+        let doc = &YamlLoader::load_from_str(&yaml).unwrap()[0];
+        for (file_name, v) in doc.as_hash().unwrap() {
+            let on_file = &v["activate_on_file"];
+            globals.insert(
+                file_name.as_str().unwrap().to_owned(),
+                on_file.as_str().unwrap().to_owned(),
+            );
+        }
+    }
+    globals
 }
 
 fn exit_dir(cur_dir: &Path, shell_name: &str) {

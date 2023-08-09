@@ -6,7 +6,7 @@ pub mod fish;
 
 use yaml_rust::{Yaml, YamlLoader};
 
-pub fn build(file: String, shell: String) {
+pub fn build(file: String, shell: String, name: Option<String>) {
     let yaml = fs::read_to_string(file).unwrap();
     let doc = &YamlLoader::load_from_str(&yaml).unwrap()[0];
 
@@ -30,12 +30,22 @@ pub fn build(file: String, shell: String) {
     add_enter_command(doc, &shell_functions, &mut enter_file);
     add_exit_command(doc, &shell_functions, &mut out_file);
 
+    let name = if let Some(n) = name {
+        n + "/"
+    } else {
+        String::new()
+    };
+
     // Some shells like zsh should be classified as bash, because they use the same script as bash
     let shell_name = shell_functions.get_name();
-    _ = fs::create_dir_all(String::from(".envail/build/") + shell_name);
-    fs::write(format!(".envail/build/{shell_name}/enter"), enter_file)
+    _ = fs::create_dir_all(String::from(".envail/build/") + shell_name + "/" + &name);
+    fs::write(
+        format!(".envail/build/{shell_name}/{name}enter"),
+        enter_file,
+    )
+    .expect("Unable to write file");
+    fs::write(format!(".envail/build/{shell_name}/{name}leave"), out_file)
         .expect("Unable to write file");
-    fs::write(format!(".envail/build/{shell_name}/leave"), out_file).expect("Unable to write file");
 }
 
 fn add_commands(doc: &Yaml, file: &mut String) {

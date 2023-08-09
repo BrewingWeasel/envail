@@ -9,3 +9,4 @@ edition = "2021"
 clap = { version = "4.3.19", features = ["derive"] }
 globalenv = "0.4.2"
 yaml-rust = "0.4.5"
+dirs = "1.0"

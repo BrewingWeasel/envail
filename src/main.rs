@@ -1,3 +1,4 @@
+extern crate dirs;
 extern crate yaml_rust;
 use std::env;
 
@@ -26,6 +27,9 @@ enum Commands {
         /// Path to config file to read from
         #[arg(short, long, default_value_t = String::from(".envail/config.yml"))]
         config: String,
+
+        #[arg(long)]
+        name: Option<String>,
     },
 }
 
@@ -40,8 +44,8 @@ fn main() {
         Commands::Cd { dir, active_dirs } => {
             envail_cd(dir, active_dirs, shell);
         }
-        Commands::Build { config } => {
-            build(config, shell);
+        Commands::Build { config, name } => {
+            build(config, shell, name);
         }
     }
 }
