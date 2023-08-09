@@ -11,13 +11,16 @@ impl Shell for Bash {
         file.push_str(&format!("unset {}\n", k))
     }
     fn add_alias(&self, file: &mut String, k: &str, v: &str) {
-        file.push_str(&format!("alias {k}=\"{v}\"\n"))
+        file.push_str(&format!("alias \"{k}\"=\"{v}\"\n"))
     }
     fn remove_alias(&self, file: &mut String, k: &str) {
-        file.push_str(&format!("unalias {k}\n"))
+        file.push_str(&format!("unalias \"{k}\"\n"))
     }
     fn get_name(&self) -> &str {
         "bash"
+    }
+    fn escape_alias(&self) -> &str {
+        "\\"
     }
     fn run_cd(&self, dir: &Path) {
         println!("\\cd {};", dir.display());

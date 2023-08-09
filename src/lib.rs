@@ -25,6 +25,7 @@ pub fn build(file: String, shell: String) {
 
     add_var(doc, &shell_functions, &mut enter_file, &mut out_file);
     add_aliases(doc, &shell_functions, &mut enter_file, &mut out_file);
+    add_hook(doc, &shell_functions, &mut enter_file, &mut out_file);
 
     add_enter_command(doc, &shell_functions, &mut enter_file);
     add_exit_command(doc, &shell_functions, &mut out_file);
@@ -74,6 +75,32 @@ fn add_aliases(
     })
 }
 
+fn add_hook(
+    doc: &Yaml,
+    shell_functions: &Box<dyn Shell>,
+    enter_file: &mut String,
+    out_file: &mut String,
+) {
+    run_for_all_and_individual(shell_functions, "hooks", |yaml_name| {
+        if let Some(hooks) = doc[yaml_name].as_hash() {
+            for (k, v) in hooks {
+                let k = k.as_str().unwrap();
+                shell_functions.add_alias(
+                    enter_file,
+                    k,
+                    &format!(
+                        "{} && {}{}",
+                        v.as_str().unwrap(),
+                        shell_functions.escape_alias(),
+                        k
+                    ),
+                );
+                shell_functions.remove_alias(out_file, k);
+            }
+        }
+    })
+}
+
 fn add_enter_command(doc: &Yaml, shell_functions: &Box<dyn Shell>, enter_file: &mut String) {
     run_for_all_and_individual(shell_functions, "on_enter", |yaml_name| {
         add_commands(&doc[yaml_name], enter_file);
@@ -112,6 +139,7 @@ pub trait Shell {
     fn add_alias(&self, file: &mut String, k: &str, v: &str);
     fn remove_alias(&self, file: &mut String, k: &str);
     fn get_name(&self) -> &str;
+    fn escape_alias(&self) -> &str;
     fn run_cd(&self, path: &Path);
     fn add_to_active(&self, path: &Path);
 }

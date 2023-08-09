@@ -20,3 +20,6 @@ aliases-fish:
 
 aliases-bash:
    sigh: "echo 'hi'"
+
+hooks:
+  "git": "echo labas"

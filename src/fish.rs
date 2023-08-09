@@ -11,13 +11,16 @@ impl Shell for Fish {
         file.push_str(&format!("set -e {}\n", k))
     }
     fn add_alias(&self, file: &mut String, k: &str, v: &str) {
-        file.push_str(&format!("alias {k} \"{v}\"\n"))
+        file.push_str(&format!("alias \"{k}\" \"{v}\"\n"))
     }
     fn remove_alias(&self, file: &mut String, k: &str) {
         file.push_str(&format!("functions -e {k}\n"))
     }
     fn get_name(&self) -> &str {
         "fish"
+    }
+    fn escape_alias(&self) -> &str {
+        "command "
     }
     fn run_cd(&self, dir: &Path) {
         println!("builtin cd {};", dir.display());
