@@ -8,6 +8,12 @@ use yaml_rust::YamlLoader;
 
 use crate::{bash, fish, Shell};
 
+#[derive(Eq, PartialEq, Hash)]
+enum ActivatingFile {
+    SingleFile(String),
+    MultipleFiles(Vec<String>),
+}
+
 pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: String) {
     let shell_functions: Box<dyn Shell> = if shell.contains("fish") {
         Box::new(fish::Fish {})
@@ -65,21 +71,21 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
             }
             if !cur_path.join(".envail/config.yml").exists() {
                 for (name, needed_file) in &global_vals {
-                    if cur_path.join(needed_file).exists() {
-                        shell_functions.add_to_active(&cur_path);
-                        if !cur_path
-                            .join(format!(".envail/build/{shell_name}/{name}"))
-                            .exists()
-                        {
-                            println!(
-                                "envail build --config ~/.config/envail/{name}.yml --name {name};"
-                            )
+                    match needed_file {
+                        ActivatingFile::SingleFile(file) => {
+                            enter_by_activater(file, &cur_path, &shell_functions, shell_name, name)
                         }
-                        println!(
-                            "source {}/.envail/build/{shell_name}/{}enter;",
-                            cur_path.display(),
-                            name.to_owned() + "/"
-                        );
+                        ActivatingFile::MultipleFiles(files) => {
+                            for file in files {
+                                enter_by_activater(
+                                    file,
+                                    &cur_path,
+                                    &shell_functions,
+                                    &shell_name,
+                                    &name,
+                                );
+                            }
+                        }
                     }
                 }
             }
@@ -87,18 +93,50 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
     }
 }
 
-fn get_global_values() -> HashMap<String, String> {
+fn enter_by_activater(
+    needed_file: &str,
+    cur_path: &Path,
+    shell_functions: &Box<dyn Shell>,
+    shell_name: &str,
+    name: &str,
+) {
+    if cur_path.join(needed_file).exists() {
+        shell_functions.add_to_active(&cur_path);
+        if !cur_path
+            .join(format!(".envail/build/{shell_name}/{name}"))
+            .exists()
+        {
+            println!("envail build --config ~/.config/envail/{name}.yml --name {name};")
+        }
+        println!(
+            "source {}/.envail/build/{shell_name}/{}enter;",
+            cur_path.display(),
+            name.to_owned() + "/"
+        );
+    }
+}
+
+fn get_global_values() -> HashMap<String, ActivatingFile> {
     let mut globals = HashMap::new();
 
     let config_dir: PathBuf = dirs::config_dir().unwrap();
     if let Ok(yaml) = fs::read_to_string(config_dir.join("envail/global.yml")) {
         let doc = &YamlLoader::load_from_str(&yaml).unwrap()[0];
         for (file_name, v) in doc.as_hash().unwrap() {
-            let on_file = &v["activate_on_file"];
-            globals.insert(
-                file_name.as_str().unwrap().to_owned(),
-                on_file.as_str().unwrap().to_owned(),
-            );
+            let on_file = v["activate_on_file"].to_owned();
+            let activater = if let Some(s) = on_file.as_str() {
+                ActivatingFile::SingleFile(s.to_owned())
+            } else {
+                ActivatingFile::MultipleFiles(
+                    on_file
+                        .into_vec()
+                        .unwrap()
+                        .into_iter()
+                        .map(|x| x.into_string().unwrap())
+                        .collect(),
+                )
+            };
+            globals.insert(file_name.as_str().unwrap().to_owned(), activater);
         }
     }
     globals
