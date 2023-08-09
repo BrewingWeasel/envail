@@ -70,20 +70,22 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
                 );
             }
             if !cur_path.join(".envail/config.yml").exists() {
-                for (name, needed_file) in &global_vals {
+                for (name, (needed_file, specific_dirs)) in &global_vals {
+                    if specific_dirs.contains(&cur_path.display().to_string()) {
+                        run_enter(&cur_path, &shell_functions, shell_name, name)
+                    }
+
                     match needed_file {
                         ActivatingFile::SingleFile(file) => {
-                            enter_by_activater(file, &cur_path, &shell_functions, shell_name, name)
+                            if cur_path.join(file).exists() {
+                                run_enter(&cur_path, &shell_functions, shell_name, name);
+                            }
                         }
                         ActivatingFile::MultipleFiles(files) => {
                             for file in files {
-                                enter_by_activater(
-                                    file,
-                                    &cur_path,
-                                    &shell_functions,
-                                    &shell_name,
-                                    &name,
-                                );
+                                if cur_path.join(file).exists() {
+                                    run_enter(&cur_path, &shell_functions, shell_name, name);
+                                }
                             }
                         }
                     }
@@ -93,30 +95,22 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
     }
 }
 
-fn enter_by_activater(
-    needed_file: &str,
-    cur_path: &Path,
-    shell_functions: &Box<dyn Shell>,
-    shell_name: &str,
-    name: &str,
-) {
-    if cur_path.join(needed_file).exists() {
-        shell_functions.add_to_active(&cur_path);
-        if !cur_path
-            .join(format!(".envail/build/{shell_name}/{name}"))
-            .exists()
-        {
-            println!("envail build --config ~/.config/envail/{name}.yml --name {name};")
-        }
-        println!(
-            "source {}/.envail/build/{shell_name}/{}enter;",
-            cur_path.display(),
-            name.to_owned() + "/"
-        );
+fn run_enter(cur_path: &Path, shell_functions: &Box<dyn Shell>, shell_name: &str, name: &str) {
+    shell_functions.add_to_active(&cur_path);
+    if !cur_path
+        .join(format!(".envail/build/{shell_name}/{name}"))
+        .exists()
+    {
+        println!("envail build --config ~/.config/envail/{name}.yml --name {name};")
     }
+    println!(
+        "source {}/.envail/build/{shell_name}/{}enter;",
+        cur_path.display(),
+        name.to_owned() + "/"
+    );
 }
 
-fn get_global_values() -> HashMap<String, ActivatingFile> {
+fn get_global_values() -> HashMap<String, (ActivatingFile, Vec<String>)> {
     let mut globals = HashMap::new();
 
     let config_dir: PathBuf = dirs::config_dir().unwrap();
@@ -124,6 +118,7 @@ fn get_global_values() -> HashMap<String, ActivatingFile> {
         let doc = &YamlLoader::load_from_str(&yaml).unwrap()[0];
         for (file_name, v) in doc.as_hash().unwrap() {
             let on_file = v["activate_on_file"].to_owned();
+
             let activater = if let Some(s) = on_file.as_str() {
                 ActivatingFile::SingleFile(s.to_owned())
             } else {
@@ -136,7 +131,20 @@ fn get_global_values() -> HashMap<String, ActivatingFile> {
                         .collect(),
                 )
             };
-            globals.insert(file_name.as_str().unwrap().to_owned(), activater);
+
+            let specific_dirs = if let Some(dir_names) = v["specific_dirs"].to_owned().into_vec() {
+                dir_names
+                    .into_iter()
+                    .map(|x| x.into_string().unwrap())
+                    .collect()
+            } else {
+                Vec::new()
+            };
+
+            globals.insert(
+                file_name.as_str().unwrap().to_owned(),
+                (activater, specific_dirs),
+            );
         }
     }
     globals
