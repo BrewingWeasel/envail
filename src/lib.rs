@@ -125,6 +125,10 @@ mod test {
             alias1: command1
             alias2: command2
             alias3: command2
+aliases-fish:
+    alias53: lolcat
+aliases-bash:
+    alias54: cowsay 
         ";
     const ALIASES_EMPTY: &str = "aliases:
     ";
@@ -146,6 +150,7 @@ mod test {
             "alias alias1 \"command1\"
 alias alias2 \"command2\"
 alias alias3 \"command2\"
+alias alias53 \"lolcat\"
 "
         );
         assert_eq!(
@@ -153,6 +158,7 @@ alias alias3 \"command2\"
             "functions -e alias1
 functions -e alias2
 functions -e alias3
+functions -e alias53
 "
         );
     }
@@ -188,6 +194,7 @@ functions -e alias3
             "alias alias1=\"command1\"
 alias alias2=\"command2\"
 alias alias3=\"command2\"
+alias alias54=\"cowsay\"
 "
         );
         assert_eq!(
@@ -195,6 +202,7 @@ alias alias3=\"command2\"
             "unalias alias1
 unalias alias2
 unalias alias3
+unalias alias54
 "
         );
     }
