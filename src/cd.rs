@@ -38,12 +38,31 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
 
     shell_functions.run_cd(&dir);
 
-    if !child_of_active && dir.join(".envail").exists() {
-        shell_functions.add_to_active(&dir);
-        if !dir.join(format!(".envail/build/{shell_name}")).exists() {
-            println!("envail build;")
+    if !child_of_active {
+        let mut cur_dir_parts = cur_dir.into_iter().fuse();
+        let mut new_dir_parts = dir.into_iter();
+        let mut cur_path = PathBuf::new();
+        while let Some(path) = new_dir_parts.next() {
+            cur_path.push(path);
+            if let Some(old_path) = cur_dir_parts.next() {
+                if old_path == path {
+                    continue;
+                }
+            }
+            if cur_path.join(".envail").exists() {
+                shell_functions.add_to_active(&cur_path);
+                if !cur_path
+                    .join(format!(".envail/build/{shell_name}"))
+                    .exists()
+                {
+                    println!("envail build;")
+                }
+                println!(
+                    "source {}/.envail/build/{shell_name}/enter;",
+                    cur_path.display()
+                );
+            }
         }
-        println!("source .envail/build/{shell_name}/enter;");
     }
 }
 
