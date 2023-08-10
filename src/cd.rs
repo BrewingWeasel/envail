@@ -85,6 +85,7 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
                             for file in files {
                                 if cur_path.join(file).exists() {
                                     run_enter(&cur_path, &shell_functions, shell_name, name);
+                                    break;
                                 }
                             }
                         }
