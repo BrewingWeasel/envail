@@ -1,0 +1,8 @@
+on_enter-bash:
+  - "source ~/.config/envail/scripts/python"
+
+on_enter-fish:
+  - "source ~/.config/envail/scripts/python.fish"
+
+aliases:
+   envail_default_run: "python3 main.py"

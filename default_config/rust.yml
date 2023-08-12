@@ -1,0 +1,8 @@
+on_enter:
+  - "echo hi"
+
+aliases:
+   envail_default_run: "cargo run"
+   envail_default_test: "cargo test"
+   envail_default_build: "cargo build"
+   envail_default_lint: "cargo clippy"

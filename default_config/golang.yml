@@ -1,0 +1,8 @@
+on_enter:
+  - "echo xd"
+
+aliases:
+   envail_default_run: "go run main.go"
+   envail_default_test: "go test"
+   envail_default_build: "go build"
+   envail_default_lint: "golangci-lint"

@@ -1,0 +1,19 @@
+# rust:
+#   activate_on_file: "Cargo.toml"
+
+# git:
+#   activate_on_file: ".git"
+
+# golang:
+#   activate_on_file: 
+#     - "go.mod"
+#     - "go.sum"
+
+python:
+  activate_on_file: 
+    - ".venv"
+    - "venv"
+    - "env"
+    - ".env"
+    - "main.py"
+    - "__pycache__"
