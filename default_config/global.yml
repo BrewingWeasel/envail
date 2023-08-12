@@ -17,3 +17,8 @@ python:
     - ".env"
     - "main.py"
     - "__pycache__"
+
+
+nvm:
+  activate_on_file: 
+    - ".nvmrc"
