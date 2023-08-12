@@ -64,10 +64,15 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
                 {
                     println!("envail build;")
                 }
-                println!(
-                    "source {}/.envail/build/{shell_name}/enter;",
-                    cur_path.display()
-                );
+                if cur_path
+                    .join(format!(".envail/build/{shell_name}/enter"))
+                    .exists()
+                {
+                    println!(
+                        "source {}/.envail/build/{shell_name}/enter;",
+                        cur_path.display()
+                    );
+                }
             }
             if !cur_path.join(".envail/config.yml").exists() {
                 for (name, (needed_file, specific_dirs)) in &global_vals {
