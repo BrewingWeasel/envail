@@ -4,5 +4,8 @@ on_enter-bash:
 on_enter-fish:
   - "source ~/.config/envail/scripts/python.fish"
 
+on_exit:
+  - "deactivate"
+
 aliases:
    envail_default_run: "python3 main.py"
