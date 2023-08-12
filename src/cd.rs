@@ -155,10 +155,14 @@ fn exit_dir(cur_dir: &Path, shell_name: &str) {
     if !cur_dir.join(format!(".envail/build/{shell_name}")).exists() {
         println!("envail build;")
     }
-    println!(
-        "source {}/.envail/build/{shell_name}/leave;",
-        cur_dir.display()
-    );
+    for i in fs::read_dir(cur_dir.join(format!(".envail/build/{shell_name}"))).unwrap() {
+        let path = i.unwrap().path();
+        if path.is_dir() {
+            println!("source {};", path.join("leave").display());
+        } else if path.ends_with("leave") {
+            println!("source {};", path.display());
+        }
+    }
     println!("_envail_delete_from_active {};", cur_dir.display())
 }
 
