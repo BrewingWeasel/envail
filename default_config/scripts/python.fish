@@ -1,9 +1,5 @@
-if test -d .venv
-    source .venv/bin/activate.fish
-else if test -d venv
-    source venv/bin/activate.fish
-else if test -d env
-    source env/bin/activate.fish
-else if test -d .env
-    source .env/bin/activate.fish
+for venvname in .venv venv env .env
+    if test -d $venvname
+        source $venvname/bin/activate.fish
+    end
 end

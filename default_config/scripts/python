@@ -1,9 +1,5 @@
-if [[ -d .venv ]]; then
-    source .venv/bin/activate.fish
-elif [[ -d venv ]]; then
-    source venv/bin/activate.fish
-elif [[ -d env ]]; then
-    source env/bin/activate.fish
-elif [[ -d .env ]]; then
-    source .env/bin/activate.fish
-fi
+for venvname in .venv venv env .env; do
+    if [[ -d $venvname ]]; then
+        source $venvname/bin/activate
+    fi
+done
