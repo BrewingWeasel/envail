@@ -1,13 +1,17 @@
-use std::{env, fs, path::Path};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 pub mod bash;
 pub mod cd;
 pub mod fish;
+pub mod nu;
 
 use yaml_rust::{Yaml, YamlLoader};
 
 pub fn build(file: String, shell: String, name: Option<String>) {
-    let yaml = fs::read_to_string(file).unwrap();
+    let yaml = fs::read_to_string(&file).unwrap();
     let doc = &YamlLoader::load_from_str(&yaml).unwrap()[0];
 
     // use contains to allow different locations ie some distros put bash in different places
@@ -16,6 +20,8 @@ pub fn build(file: String, shell: String, name: Option<String>) {
     } else if shell.contains("bash") || shell.contains("zsh") {
         // Everything done in the bash script should also work with zsh
         Box::new(bash::Bash {})
+    } else if shell.contains("nu") {
+        Box::new(nu::Nu {})
     } else {
         panic!("unsupported shell");
     };
@@ -36,16 +42,15 @@ pub fn build(file: String, shell: String, name: Option<String>) {
         String::new()
     };
 
+    let mut build_loc = PathBuf::from(file);
+    build_loc.pop();
+
     // Some shells like zsh should be classified as bash, because they use the same script as bash
     let shell_name = shell_functions.get_name();
-    _ = fs::create_dir_all(String::from(".envail/build/") + shell_name + "/" + &name);
-    fs::write(
-        format!(".envail/build/{shell_name}/{name}enter"),
-        enter_file,
-    )
-    .expect("Unable to write file");
-    fs::write(format!(".envail/build/{shell_name}/{name}leave"), out_file)
-        .expect("Unable to write file");
+    let final_build = build_loc.join(String::from("build/") + shell_name + "/" + &name);
+    _ = fs::create_dir_all(&final_build);
+    fs::write(format!("{}enter", final_build.display()), enter_file).expect("Unable to write file");
+    fs::write(format!("{}leave", final_build.display()), out_file).expect("Unable to write file");
 }
 
 fn add_commands(doc: &Yaml, file: &mut String) {

@@ -6,7 +6,7 @@ use std::{
 
 use yaml_rust::YamlLoader;
 
-use crate::{bash, fish, Shell};
+use crate::{bash, fish, nu, Shell};
 
 #[derive(Eq, PartialEq, Hash)]
 enum ActivatingFile {
@@ -20,6 +20,8 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
     } else if shell.contains("bash") || shell.contains("zsh") {
         // Everything done in the bash script should also work with zsh
         Box::new(bash::Bash {})
+    } else if shell.contains("nu") {
+        Box::new(nu::Nu {})
     } else {
         panic!("unsupported shell");
     };
@@ -62,7 +64,10 @@ pub fn envail_cd(dir: Option<String>, active_dirs: Option<Vec<String>>, shell: S
                     .join(format!(".envail/build/{shell_name}"))
                     .exists()
                 {
-                    println!("envail build;")
+                    println!(
+                        "envail --shell {shell_name} build --config {}/.envail/config.yml;",
+                        dir.display()
+                    )
                 }
                 if cur_path
                     .join(format!(".envail/build/{shell_name}/enter"))
